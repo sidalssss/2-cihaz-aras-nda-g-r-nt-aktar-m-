@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamera Kontrol Paneli</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #0d6efd;
+        }
+        #video-container {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: #000;
+            margin-bottom: 20px;
+            max-width: 90%;
+        }
+        img {
+            display: block;
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+        }
+        button {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0b5ed7;
+        }
+        #message {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #4caf50;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Canlı Kamera Yayını</h1>
+
+    <div id="video-container">
+       <img src="{{ url_for('video_feed') }}" width="5000" height="5000"  alt="Kamera Yayını"> 
+    </div>
+
+    <button id="snapshot-button">Anlık Görüntü Al</button>
+    <div id="message"></div>
+
+    <script>
+        const snapshotButton = document.getElementById('snapshot-button');
+        const messageDiv = document.getElementById('message');
+
+        snapshotButton.addEventListener('click', () => {
+            messageDiv.textContent = 'Görüntü alınıyor...';
+            fetch('/capture_snapshot')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        messageDiv.textContent = `Görüntü başarıyla kaydedildi: ${data.path}`;
+                        // Mesajı 5 saniye sonra temizle
+                        setTimeout(() => {
+                            messageDiv.textContent = '';
+                        }, 5000);
+                    } else {
+                        messageDiv.style.color = '#f44336';
+                        messageDiv.textContent = 'Hata: Görüntü alınamadı.';
+                    }
+                })
+                .catch(error => {
+                    console.error('Snapshot alınırken hata:', error);
+                    messageDiv.style.color = '#f44336';
+                    messageDiv.textContent = 'Bir hata oluştu.';
+                });
+        });
+    </script>
+
+</body>
+</html>
