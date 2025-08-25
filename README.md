@@ -1,1 +1,59 @@
 # 2-cihaz-arasinda goruntu aktarimi
+FLASK KAMERA KONTROL PROJESİ - ÇALIŞMA MANTIĞI
+
+Bu doküman, projenin amacını, nasıl çalıştığını ve nasıl kullanılacağını açıklamaktadır.
+
+## 1. Projenin Amacı
+
+Bu proje, bir bilgisayarın (sunucu) web kamerası görüntüsünü, aynı yerel ağ (Wi-Fi veya kablolu) üzerindeki başka bir cihaza (istemci - telefon, tablet, başka bir bilgisayar) canlı olarak aktarmak için geliştirilmiştir. İstemci, web tarayıcısı üzerinden bu canlı yayını izleyebilir ve istediği anın fotoğrafını çekip sunucu bilgisayara kaydedebilir.
+
+## 2. Kullanılan Teknolojiler
+
+- **Python:** Projenin ana programlama dili.
+- **Flask:** Web sunucusunu oluşturmak ve istemci ile sunucu arasındaki iletişimi yönetmek için kullanılan hafif bir web çatısıdır.
+- **OpenCV (cv2):** Sunucu bilgisayarın kamerasına erişmek, görüntüleri (kareleri) yakalamak ve işlemek için kullanılan güçlü bir bilgisayarlı görü kütüphanesidir.
+
+## 3. Proje Dosyaları ve Görevleri
+
+- **`app.py`:** Projenin kalbidir. Flask uygulamasını başlatır ve istemciden gelen istekleri yönetir.
+  - `/` adresi: Kullanıcının tarayıcıda gördüğü ana sayfayı (`index.html`) sunar.
+  - `/video_feed` adresi: Kameradan gelen görüntüleri canlı bir video akışına dönüştürür.
+  - `/capture_snapshot` adresi: "Anlık Görüntü Al" butonuna basıldığında tetiklenir ve o anki görüntüyü `snapshots` klasörüne kaydeder.
+
+- **`camera.py`:** Kamera ile ilgili tüm teknik işlemleri yapar. Bu dosya, `app.py`'nin daha temiz kalmasını sağlar. Görevleri: kamerayı başlatmak, sürekli olarak yeni kareler okumak ve bu kareleri web'de gösterilebilecek JPEG formatına dönüştürmektir.
+
+- **`requirements.txt`:** Projenin çalışması için gereken Python kütüphanelerinin (Flask, opencv-python) listesidir.
+
+- **`templates/index.html`:** Web arayüzünü oluşturan HTML dosyasıdır. İçinde canlı yayını gösteren bir `<img>` etiketi ve anlık görüntü almayı sağlayan bir buton bulunur.
+
+- **`snapshots/` klasörü:** Anlık olarak yakalanan görüntülerin kaydedildiği yerdir. Bu klasör, uygulama ilk defa anlık görüntü aldığında otomatik olarak oluşturulur.
+
+## 4. Teknik Çalışma Prensibi
+
+1.  **Sunucu Başlatma:** `python app.py` komutu ile sunucu başlatıldığında, Flask uygulaması çalışmaya başlar ve `camera.py` aracılığıyla bilgisayarın kamerası aktif hale gelir.
+2.  **İstemci Bağlantısı:** Kullanıcı, başka bir cihazdan sunucu bilgisayarın IP adresini ve port numarasını (örneğin: `http://192.168.1.34:5000`) tarayıcısına yazar.
+3.  **Video Akışı:** Tarayıcı, `index.html` sayfasını yükler. Sayfadaki `<img>` etiketinin `src` özelliği `/video_feed` adresine ayarlanmıştır. Tarayıcı bu adrese bir istek gönderir.
+4.  **MJPEG Stream:** Sunucu, bu isteğe "Multipart JPEG" (MJPEG) formatında bir yanıt verir. Bu, aslında art arda gönderilen JPEG resimlerinden oluşan bir akıştır. Sunucu, OpenCV ile saniyede birçok kez kameradan bir kare yakalar, bunu JPEG'e çevirir ve istemciye gönderir. Tarayıcı bu JPEG'leri sürekli güncelleyerek bir video görüntüsü oluşturur. Bu yöntem, özel bir video oynatıcıya ihtiyaç duymadan, standart HTML ile canlı yayın yapmanın etkili bir yoludur.
+5.  **Anlık Görüntü Alma:** Kullanıcı butona tıkladığında, tarayıcıdaki JavaScript kodu sunucudaki `/capture_snapshot` adresine bir istek gönderir. Sunucu bu isteği alınca, o anki kamera karesini bir `.jpg` dosyası olarak `snapshots` klasörüne kaydeder ve işlemin başarılı olduğuna dair bir mesajı istemciye geri gönderir.
+
+## 5. Kurulum ve Çalıştırma
+
+1.  **Gereksinimleri Yükle:** Proje klasöründe bir terminal veya komut istemi açın ve aşağıdaki komutu çalıştırın:
+    ```bash
+    pip install -r requirements.txt
+    ```
+    Bu komut, `requirements.txt` dosyasında listelenen Flask ve OpenCV kütüphanelerini bilgisayarınıza kuracaktır.
+
+2.  **Sunucuyu Başlat:** Aynı terminalde aşağıdaki komutu çalıştırın:
+    ```bash
+    python app.py
+    ```
+
+3.  **IP Adresini Bul:** Sunucunun çalıştığı bilgisayarın yerel IP adresini öğrenmeniz gerekir.
+    - **Windows'ta:** Komut istemine `ipconfig` yazın ve "IPv4 Address" satırını bulun.
+    - **macOS/Linux'ta:** Terminale `ifconfig` veya `ip a` yazın ve `inet` ile başlayan adresi bulun.
+    (Genellikle `192.168.x.x` veya `10.0.x.x` gibi bir adres olacaktır.)
+
+4.  **İstemciden Bağlan:** Kamerayı izlemek istediğiniz diğer cihazdan (telefon, tablet vb.) bir web tarayıcısı açın. Adres çubuğuna `http://<SUNUCUNUN_IP_ADRESI>:5000` yazın. Örneğin: `http://192.168.1.34:5000`
+
+Artık canlı yayını izleyebilir ve anlık görüntüler alabilirsiniz!
