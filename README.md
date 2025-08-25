@@ -1,1 +1,1 @@
-# 2-cihaz-aras-nda-g-r-nt-aktar-m-
+# 2-cihaz-arasinda goruntu aktarimi
