@@ -1,0 +1,1 @@
+# 2-cihaz-aras-nda-g-r-nt-aktar-m-
